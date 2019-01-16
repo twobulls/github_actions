@@ -1,6 +1,6 @@
 workflow "New workflow" {
     on = "push"
-    resolves = "Deploy Hello World"
+    resolves = ["Build Hello World", "Lint Hello World"]
 }
 
 action "Build Hello World" {
@@ -11,9 +11,9 @@ action "Lint Hello World" {
     uses = "./actions/lint"
 }
 
-action "Deploy Hello World" {
-    needs = ["Build Hello World", "Lint Hello World"]
-    uses = "serverless/github-action@master"
-    secrets =  ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
-    args = "deploy"
-}
+# action "Deploy Hello World" {
+#     needs = ["Build Hello World", "Lint Hello World"]
+#     uses = "serverless/github-action@master"
+#     secrets =  ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
+#     args = "deploy"
+# }
