@@ -1,6 +1,6 @@
 workflow "New workflow" {
     on = "push"
-    resolves = ["Deploy Hello World", "Lint Hello World"]
+    resolves = "Deploy Hello World"
 }
 
 action "Build Hello World" {
