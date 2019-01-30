@@ -118,7 +118,7 @@ Next, we’ll build a serverless API. The Workflow will build, lint, and deploy 
 - An AWS IAM User with Programmatic Access (see [here](https://github.com/serverless/serverless/issues/1439) for a good starter IAM Policy and note that you should always follow the Principle of Least Privilege when setting up an IAM User) 
 - The `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` of the user above. 
 - GitHub Account enrolled in the [GitHub Actions Beta](https://github.com/features/actions)
-- Clone or fork of the repo https://github.com/alexbielen/go_github_actions/actions
+- Clone or fork of the repo https://github.com/twobulls/github_actions
 
 ### Secrets
 Grab the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` from the IAM user you created. In the “Settings” page in your repository click on “Secrets” and add the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Note: during the public beta do not store any production or high-value workflow secrets in the repository. 
