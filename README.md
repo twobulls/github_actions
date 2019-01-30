@@ -106,7 +106,7 @@ action "Deploy Hello World" {
 ```
 
 Secrets are added through the repository settings panel. 
-![Secrets.](https://github.com/twobulls/github_actions/images/secrets.png)
+![Secrets.](images/secrets.png)
 
 Note: GitHub Actions recommends that during the Public Beta you do not store any high-value workflow secrets at this time. For more information read the [official documentation.](https://developer.github.com/actions/creating-workflows/storing-secrets/)
 
@@ -250,7 +250,7 @@ With everything set up, we’re ready to deploy the API. You can make a change t
 
 If everything was correctly configured you’ll see a green checkmark on each of the Actions. 
 
-![Workflow](https://github.com/twobulls/github_actions/images/workflow.png)
+![Workflow](images/workflow.png)
 
 
 Next, view the logs of the “Deploy Hello World” Action. 
