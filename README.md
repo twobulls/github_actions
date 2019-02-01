@@ -1,5 +1,12 @@
 # GitHub Actions 
-Have you heard the saying “releases should be boring”? This is the unofficial motto of Continuous Integration and Continuous Deployment (CI/CD). GitHub Actions, announced at the 2018 GitHub Universe Conference, aims to bring boring releases to _all_ users in the GitHub Ecosystem. Today we’ll cover some of the core ideas that Actions uses to accomplish this. Then we’ll build and deploy a serverless API using AWS, the Serverless Framework, and GitHub Actions.
+Have you heard the saying “releases should be boring”? This is the unofficial motto of Continuous Integration and Continuous Deployment (CI/CD). GitHub Actions, announced at the 2018 GitHub Universe Conference, aims to bring boring releases to _all_ users in the GitHub Ecosystem. Today we’ll cover why GitHub Actions is an important development in social coding. Next, we'll look the core concepts that Actions uses to create an automation system. Lastly, we’ll build and deploy a serverless API using AWS, the Serverless Framework, and GitHub Actions. Note that the following prerequisites are required to complete the tutorial: 
+
+- An AWS Account (set up Free Tier Access Here) [AWS Free Tier](https://aws.amazon.com/free/)
+- An AWS IAM User with Programmatic Access (see [here](https://github.com/serverless/serverless/issues/1439) for a good starter IAM Policy and note that you should always follow the Principle of Least Privilege when setting up an IAM User) 
+- The `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` of the user above. 
+- GitHub Account enrolled in the [GitHub Actions Beta](https://github.com/features/actions)
+- Clone or fork of the repo https://github.com/twobulls/github_actions
+
 
 ## Social Coding
 Social coding is a software development practice centered around the belief that community and collaboration build the best software. There are numerous examples of social coding, including GitHub, open source software in general, and package managers like npm. Social coding allows builders to share effort and to work collaboratively on software. GitHub Actions is an important step forward in social coding because it introduces a feasible way to share automation.
@@ -9,6 +16,8 @@ Automation and CI/CD tend to be boilerplate-heavy. This leads to repetitive code
 In any large-scale social coding platform it’s important to be aware of potential issues caused by version changes and vulnerabilities introduced accidentally or maliciously. Actions is no exception. GitHub has addressed some of the issues including access control and version-pinning, but there are some other issues which we will explore later. Next, we’ll dive into the core concepts of GitHub Actions. 
 
 ## Core Concepts
+
+### Visual Editor or Configuration Language
 Workflows can be created in code or using the visual editor. The following examples will use the configuration language that Actions provides.
 
 ### Actions
@@ -16,11 +25,22 @@ Actions are “code that run in Docker containers”.  Although Actions share th
 
 ```
 action "Unique Name" {
-  uses = "./helloworld"
+  uses = "./actions/helloworld"
 }
 ```
+The `uses` attribute can reference an Action in the same repo, a public Action in a GitHub repository, or a public Docker container hosted on Dockerhub. This Action references the following Docker container: 
 
-The `uses` attribute can reference an Action in the same repo, a public Action in a GitHub repository, or a public Docker container hosted on Dockerhub. You can provide other optional attributes depending on your needs. A few common attributes including `needs` , `secrets`, and `args` will be discussed later. For a full list of attributes see the official documentation [official documentation](https://developer.github.com/actions/creating-workflows/workflow-configuration-options/#actions-attributes).
+```Dockerfile
+# actions/helloworld/Dockerfile
+FROM golang:1.11.4-stretch
+
+LABEL "com.github.actions.name"="Echo Hello World"
+LABEL "com.github.actions.description"="Say Hello to the World!"
+
+CMD echo "Hello World!"
+```
+
+Don't worry too much if your unfamiliar with Docker. We will do a brief overview of the commands used later on. You can provide other optional attributes depending on your needs. A few common attributes including `needs`, `secrets`, and `args` will be discussed later. For a full list of attributes see the official documentation [official documentation](https://developer.github.com/actions/creating-workflows/workflow-configuration-options/#actions-attributes).
 
 ### Events 
 Events are “happenings” within your GitHub repository including `pull_request_review`, `push`, and `issues`. Events trigger different workflows and have different environment variables depending on the type of event. This is important because the commit that the Action runs against depends on the event type triggering the Action. 
@@ -113,13 +133,6 @@ Note: GitHub Actions recommends that during the Public Beta you do not store any
 ## Deploy a Serverless API Using GitHub Actions
 Next, we’ll build a serverless API. The Workflow will build, lint, and deploy on each `push` to the master branch in our repository. There are a few prerequisites that you’ll need to complete this tutorial. 
 
-### Prerequisites 
-- An AWS Account (set up Free Tier Access Here) [AWS Free Tier](https://aws.amazon.com/free/)
-- An AWS IAM User with Programmatic Access (see [here](https://github.com/serverless/serverless/issues/1439) for a good starter IAM Policy and note that you should always follow the Principle of Least Privilege when setting up an IAM User) 
-- The `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` of the user above. 
-- GitHub Account enrolled in the [GitHub Actions Beta](https://github.com/features/actions)
-- Clone or fork of the repo https://github.com/twobulls/github_actions
-
 ### Secrets
 Grab the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` from the IAM user you created. In the “Settings” page in your repository click on “Secrets” and add the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Note: during the public beta do not store any production or high-value workflow secrets in the repository. 
 
@@ -186,8 +199,7 @@ build:
 ```
 
 ### GitHub Actions Code
-
-Next we’ll take a look at the GitHub Actions Workflow and Action definitions. Here we’ve defined a Workflow that is triggered on every `push` event and resolves the “Deploy Hello World” Action. The “Deploy Hello World Action” `uses` an external Action, maintained by the Serverless GitHub organization. To refer to this external Action we use the organization name, the repo name, and the commit-ish that we’d like pin the version to. The “Deploy Hello World” Action also `needs` the “Build Hello World” and “Lint Hello World” Actions, but these are defined in our repository and thus can be referenced using the relative path syntax. These will complete _before_ the “Deploy Hello World Action”. 
+Next we’ll take a look at the GitHub Actions Workflow and Action definitions. Here we’ve defined a Workflow that is triggered on every `push` event and resolves the “Deploy Hello World” Action. The “Deploy Hello World” Action `uses` an external Action, maintained by the Serverless GitHub organization. To refer to this external Action we use the organization name, the repo name, and the commit-ish that we’d like pin the version to. Additonally, we explicitly grant this Action access to the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` secrets that we created earlier. The `args` attribute is the argument that we pass to the Action -- since this Action is wrapping the Serverless Framework we want to pass the `deploy` argument, but any Serverless command can be run here.  The “Deploy Hello World” Action `needs` the “Build Hello World” and “Lint Hello World” Actions, but these are defined in our repository and thus can be referenced using the relative path syntax. These will complete _before_ the “Deploy Hello World Action”. 
 
 ```
 workflow "New workflow" {
@@ -293,7 +305,13 @@ There are a few limitations to be aware of when using GitHub Actions. First, it 
 You can read the full list in the [official documentation.](https://developer.github.com/actions/creating-workflows/workflow-configuration-options/#workflow-limitations)
 
 ### Security Limitations 
-As hinted at earlier, Actions mitigates some potential security issues by allowing version-pinning and explicit access control to secrets. When using external actions you need to trust the author. Is there a way to know that an external Action is compromised? How much access does an external action need? What is the external action doing with your secrets if you grant access? These are not necessarily unique to GitHub Actions, but instead, is a wider problem in the social coding era. A few potential mitigations for this problem would be alerts about compromised external actions and a freeze on Workflows using compromised Actions. 
+As hinted at earlier, Actions mitigates some potential security issues by allowing version-pinning and explicit access control to secrets. When using external actions you need to trust the author. A few questions you should ask when integrating an external Action are: 
+
+- Is there a way to know that an Action is compromised? 
+- How much access does an external action need? 
+- What is the external action doing with your secrets if you grant access? 
+
+These problems are not necessarily unique to GitHub Actions, but instead, are a wider problem in the social coding era. A few potential mitigations for this problem would be alerts about compromised external actions and a freeze on Workflows using compromised Actions. But until those features are implemented, be sure to trust the Actions that you're using. 
 
 ## Next Steps 
-Today you learned about GitHub Actions and deployed a serverless API. GitHub Actions is extremely flexible and this just scratches the surface of what is possible. Because of the diversity of events available, Actions can integrate with GitHub Issues and with external communication tools like Slack. You can build automation for lots of common tasks. But most importantly, you can share that automation and use automation that others have already built. This lets you focus on building the core differentiators of your app. 
+Today you learned about GitHub Actions and deployed a serverless API. GitHub Actions is extremely flexible and this just scratches the surface of what is possible. Because of the diversity of events available, Actions can integrate with GitHub Issues and with external communication tools like Slack. You can build automation for lots of common tasks. But most importantly, you can share that automation and use automation that others have already built. 
